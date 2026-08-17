@@ -5,41 +5,15 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 
 import config
-from llm_service import generate_response, get_active_model, resolve_model_name, set_active_model
-
-
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.effective_chat.id
-    active_model = get_active_model(chat_id)
-    available = ", ".join(sorted(config.AVAILABLE_MODELS.keys()))
-    await update.message.reply_text(
-        f"System online! This chat is currently using {active_model}. "
-        f"To switch models, send /model gemma or /model light. Available: {available}."
-    )
-
-
-async def set_model_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    chat_id = update.effective_chat.id
-    args = context.args
-
-    if not args:
-        available = ", ".join(sorted(config.AVAILABLE_MODELS.keys()))
-        current = get_active_model(chat_id)
-        await update.message.reply_text(
-            f"Current model for this chat: {current}. Available: {available}. "
-            "Usage: /model gemma or /model light"
-        )
-        return
-
-    requested = " ".join(args)
-    try:
-        resolved = set_active_model(chat_id, requested)
-        await update.message.reply_text(
-            f"✅ Model updated for this chat: {resolved}. "
-            "Send your next message and it will use this model."
-        )
-    except ValueError as exc:
-        await update.message.reply_text(str(exc))
+from bot_commands import (
+    list_models_command,
+    open_browser_command,
+    open_calculator_command,
+    open_notes_command,
+    set_model_command,
+    start,
+)
+from llm_service import generate_response, get_active_model, set_active_model
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -65,9 +39,19 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     if command in {"/models", "/listmodels", "models", "list models"}:
-        available = ", ".join(sorted(config.AVAILABLE_MODELS.keys()))
-        current = get_active_model(chat_id)
-        await update.message.reply_text(f"Current model: {current}. Available: {available}")
+        await list_models_command(update, context)
+        return
+
+    if command in {"/notes", "/notebook", "/opennotes"}:
+        await open_notes_command(update, context)
+        return
+
+    if command in {"/browser", "/openbrowser", "/research"}:
+        await open_browser_command(update, context)
+        return
+
+    if command in {"/calculator", "/calc", "/math"}:
+        await open_calculator_command(update, context)
         return
 
     print(f"\n[*] Received prompt: {user_text}")
@@ -96,10 +80,13 @@ def run_bot():
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("model", set_model_command))
     app.add_handler(CommandHandler("setmodel", set_model_command))
-    app.add_handler(CommandHandler("models", lambda update, context: update.message.reply_text(
-        f"Current model: {get_active_model(update.effective_chat.id)}. "
-        f"Available: {', '.join(sorted(config.AVAILABLE_MODELS.keys()))}"
-    )))
+    app.add_handler(CommandHandler("models", list_models_command))
+    app.add_handler(CommandHandler("notes", open_notes_command))
+    app.add_handler(CommandHandler("notebook", open_notes_command))
+    app.add_handler(CommandHandler("browser", open_browser_command))
+    app.add_handler(CommandHandler("research", open_browser_command))
+    app.add_handler(CommandHandler("calculator", open_calculator_command))
+    app.add_handler(CommandHandler("calc", open_calculator_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     print("Bot is polling. Send a message from your phone!")
