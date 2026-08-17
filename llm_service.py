@@ -6,6 +6,7 @@ from typing import Dict
 
 from langchain_ollama import ChatOllama
 from langchain_core.messages import HumanMessage
+from features.tools import prompt_claude_desktop, open_gemini_in_chrome
 
 import config
 
@@ -14,6 +15,7 @@ import config
 ACTIVE_MODELS: Dict[int, str] = {}
 MODEL_CACHE: Dict[str, ChatOllama] = {}
 MODEL_LOCK = threading.Lock()
+tools = [prompt_claude_desktop, open_gemini_in_chrome]
 
 
 def resolve_model_name(model_name: str | None) -> str:
@@ -69,7 +71,7 @@ def get_llm_for_model(model_name: str) -> ChatOllama:
                 model=resolved_model,
                 base_url=config.OLLAMA_BASE_URL,
                 temperature=0.7,
-            )
+            ).bind_tools(tools=tools)
             MODEL_CACHE[resolved_model] = cached
 
         return cached
@@ -85,6 +87,15 @@ def generate_response(prompt: str, chat_id: int | str | None = None) -> str:
         llm = get_llm_for_model(model_name)
         messages = [HumanMessage(content=prompt)]
         response = llm.invoke(messages)
+        if response.tool_calls:
+            for tool_call in response.tool_calls:
+                tool_args = tool_call.get("args", {})
+                tool_name = tool_call["name"]
+                if tool_name == "prompt_claude_desktop":
+                    prompt_value = tool_args.get("prompt_text", prompt)
+                    return prompt_claude_desktop.invoke({"prompt_text": prompt_value})
+                if tool_name == "open_gemini_in_chrome":
+                    return open_gemini_in_chrome.invoke({})
         return response.content
     except Exception as e:
         # This catches issues like Ollama being turned off or the model not existing.

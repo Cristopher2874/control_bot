@@ -7,38 +7,48 @@ def markdown_to_telegram_html(text: str) -> str:
     if not text:
         return text
 
-    safe = escape(text, quote=False)
+    cleaned = text.replace("\r\n", "\n")
+    cleaned = cleaned.replace("\t", "    ")
 
-    # Strong emphasis
+    code_blocks: dict[str, str] = {}
+
+    def code_block_replacer(match: re.Match[str]) -> str:
+        key = f"§CODEBLOCK{len(code_blocks)}§"
+        code = match.group(1).strip()
+        code_blocks[key] = "<pre>" + escape(code, quote=True) + "</pre>"
+        return key
+
+    cleaned = re.sub(
+        r"```(?:[A-Za-z0-9_-]+)?\s*\n(.*?)```",
+        code_block_replacer,
+        cleaned,
+        flags=re.DOTALL,
+    )
+
+    inline_codes: dict[str, str] = {}
+
+    def inline_code_replacer(match: re.Match[str]) -> str:
+        key = f"§INLINECODE{len(inline_codes)}§"
+        inline_codes[key] = "<code>" + escape(match.group(1), quote=True) + "</code>"
+        return key
+
+    cleaned = re.sub(r"`([^`]+)`", inline_code_replacer, cleaned)
+
+    safe = escape(cleaned, quote=True)
+
+    safe = re.sub(r"(?m)^[ ]*(?:[-*+]\s+|\d+\.\s+)(.+)$", r"• \1", safe)
+    safe = re.sub(r"(?m)^(#{1,6})\s*(.+?)\s*$", r"<b>\2</b>", safe)
+    safe = re.sub(r"(?m)^>\s*(.*)$", r"<blockquote>\1</blockquote>", safe)
     safe = re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", safe)
     safe = re.sub(r"__([\w\s\-]+?)__", r"<b>\1</b>", safe)
-
-    # Emphasis
     safe = re.sub(r"(?<!\*)\*(?!\*)([^*]+?)(?<!\*)\*(?!\*)", r"<i>\1</i>", safe)
     safe = re.sub(r"(?<!_)_(?!_)([^_]+?)(?<!_)_(?!_)", r"<i>\1</i>", safe)
-
-    # Inline code
-    safe = re.sub(r"`([^`]+)`", r"<code>\1</code>", safe)
-
-    # Strikethrough
     safe = re.sub(r"~~(.+?)~~", r"<s>\1</s>", safe)
-
-    # Links
     safe = re.sub(r"\[([^\]]+)\]\((https?://[^)]+)\)", r'<a href="\2">\1</a>', safe)
 
-    # Headers: convert Markdown # headings to bold lines
-    safe = re.sub(r"(?m)^#{1,6}\s*(.*)$", r"<b>\1</b>", safe)
+    for key, value in inline_codes.items():
+        safe = safe.replace(key, value)
+    for key, value in code_blocks.items():
+        safe = safe.replace(key, value)
 
-    # Blockquotes
-    safe = re.sub(r"(?m)^>\s*(.*)$", r"<blockquote>\1</blockquote>", safe)
-
-    # Lists
-    safe = re.sub(r"(?m)^\s*[-*]\s+(.*)$", r"• \1", safe)
-    safe = re.sub(r"(?m)^\s*\d+\.\s+(.*)$", r"• \1", safe)
-
-    # Code blocks (fenced)
-    safe = re.sub(r"```(?:\w+)?\n?(.*?)```", lambda m: "<pre>" + escape(m.group(1), quote=False) + "</pre>", safe, flags=re.DOTALL)
-
-    # Preserve paragraphs/newlines, but make them Telegram-friendly
-    safe = safe.replace("\r\n", "\n")
     return safe

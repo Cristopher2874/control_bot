@@ -19,7 +19,7 @@ class ModelSelectionTests(unittest.TestCase):
         self.assertEqual(get_active_model(chat_id), "gemma4:e4b")
 
     def test_markdown_is_converted_for_telegram(self):
-        text = "**bold** and *italic* and `code`\n- item one\n- item two\n# Heading"
+        text = "**bold** and *italic* and `code`\n\t- item one\n\t- item two\n# Heading\n```python\nprint('hi')\n```"
         converted = markdown_to_telegram_html(text)
 
         self.assertIn("<b>bold</b>", converted)
@@ -27,6 +27,9 @@ class ModelSelectionTests(unittest.TestCase):
         self.assertIn("<code>code</code>", converted)
         self.assertIn("• item one", converted)
         self.assertIn("<b>Heading</b>", converted)
+        self.assertIn("<pre>print(&#x27;hi&#x27;)</pre>", converted)
+        self.assertNotIn("\t- item one", converted)
+        self.assertNotIn("\t- item two", converted)
 
 
 if __name__ == "__main__":
