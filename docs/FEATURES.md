@@ -33,6 +33,7 @@ The app should stay modular:
 - `config.py` for environment and defaults
 - `llm_service.py` for model resolution and LLM calls
 - `features/` for command-specific local tools
+- `formatters/` for rendering model output into Telegram-safe formats
 - `telegram_bot.py` for Telegram wiring only
 
 ## Example usage

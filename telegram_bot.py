@@ -2,6 +2,7 @@
 import asyncio
 
 from telegram import Update
+from telegram.constants import ParseMode
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 
 import config
@@ -13,6 +14,7 @@ from bot_commands import (
     set_model_command,
     start,
 )
+from formatters import markdown_to_telegram_html
 from llm_service import generate_response, get_active_model, set_active_model
 
 
@@ -63,8 +65,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         loop = asyncio.get_running_loop()
         response_text = await loop.run_in_executor(None, generate_response, user_text, chat_id)
+        formatted_text = markdown_to_telegram_html(response_text)
 
-        await status_msg.edit_text(response_text)
+        await status_msg.edit_text(formatted_text, parse_mode=ParseMode.HTML)
         print("[*] Success! Response sent.")
 
     except Exception as e:

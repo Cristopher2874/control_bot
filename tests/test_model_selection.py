@@ -1,6 +1,7 @@
 import unittest
 
-from llm_service import get_active_model, set_active_model, resolve_model_name
+from formatters import markdown_to_telegram_html
+from llm_service import get_active_model, resolve_model_name, set_active_model
 
 
 class ModelSelectionTests(unittest.TestCase):
@@ -16,6 +17,16 @@ class ModelSelectionTests(unittest.TestCase):
 
         set_active_model(chat_id, "gemma")
         self.assertEqual(get_active_model(chat_id), "gemma4:e4b")
+
+    def test_markdown_is_converted_for_telegram(self):
+        text = "**bold** and *italic* and `code`\n- item one\n- item two\n# Heading"
+        converted = markdown_to_telegram_html(text)
+
+        self.assertIn("<b>bold</b>", converted)
+        self.assertIn("<i>italic</i>", converted)
+        self.assertIn("<code>code</code>", converted)
+        self.assertIn("• item one", converted)
+        self.assertIn("<b>Heading</b>", converted)
 
 
 if __name__ == "__main__":

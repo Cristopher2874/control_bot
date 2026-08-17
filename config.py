@@ -16,7 +16,11 @@ OLLAMA_BASE_URL = "http://localhost:11434"
 # These names are user-friendly aliases and map to the real Ollama model names.
 AVAILABLE_MODELS = {
     "light": "gemma4:e2b",
+    "gemma-light": "gemma4:e2b",
+    "gemma4:e2b": "gemma4:e2b",
     "heavy": "gemma4:e4b",
+    "gemma": "gemma4:e4b",
+    "gemma4:e4b": "gemma4:e4b",
     "gemma-cloud": "gemma4:31b-cloud",
 }
 
