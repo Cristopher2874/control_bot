@@ -1,42 +1,105 @@
 # telegram_bot.py
 import asyncio
+
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
+
 import config
-from llm_service import generate_response
+from llm_service import generate_response, get_active_model, resolve_model_name, set_active_model
+
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(f"System online! Send a prompt to run on {config.OLLAMA_MODEL}.")
+    chat_id = update.effective_chat.id
+    active_model = get_active_model(chat_id)
+    available = ", ".join(sorted(config.AVAILABLE_MODELS.keys()))
+    await update.message.reply_text(
+        f"System online! This chat is currently using {active_model}. "
+        f"To switch models, send /model gemma or /model light. Available: {available}."
+    )
+
+
+async def set_model_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    chat_id = update.effective_chat.id
+    args = context.args
+
+    if not args:
+        available = ", ".join(sorted(config.AVAILABLE_MODELS.keys()))
+        current = get_active_model(chat_id)
+        await update.message.reply_text(
+            f"Current model for this chat: {current}. Available: {available}. "
+            "Usage: /model gemma or /model light"
+        )
+        return
+
+    requested = " ".join(args)
+    try:
+        resolved = set_active_model(chat_id, requested)
+        await update.message.reply_text(
+            f"✅ Model updated for this chat: {resolved}. "
+            "Send your next message and it will use this model."
+        )
+    except ValueError as exc:
+        await update.message.reply_text(str(exc))
+
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_text = update.message.text
+    user_text = update.message.text or ""
+    text = user_text.strip()
+    chat_id = update.effective_chat.id
+
+    if not text:
+        return
+
+    command = text.lower()
+    if command.startswith("/model") or command.startswith("/setmodel") or command.startswith("model ") or command.startswith("set model "):
+        model_name = text.split(maxsplit=1)[1] if " " in text else ""
+        requested = model_name.strip()
+        try:
+            resolved = set_active_model(chat_id, requested)
+            await update.message.reply_text(
+                f"✅ Model updated for this chat: {resolved}. "
+                "Your next message will use this model."
+            )
+        except ValueError as exc:
+            await update.message.reply_text(str(exc))
+        return
+
+    if command in {"/models", "/listmodels", "models", "list models"}:
+        available = ", ".join(sorted(config.AVAILABLE_MODELS.keys()))
+        current = get_active_model(chat_id)
+        await update.message.reply_text(f"Current model: {current}. Available: {available}")
+        return
+
     print(f"\n[*] Received prompt: {user_text}")
-    
-    # 1. Send immediate confirmation so you know the PC received it
     status_msg = await update.message.reply_text("⏳ Request received. Initializing agent...")
 
     try:
-        print(f"[*] Sending to {config.OLLAMA_MODEL}...")
-        
-        # 2. Run the LLM in a background thread to keep the bot responsive
+        active_model = get_active_model(chat_id)
+        print(f"[*] Sending to {active_model} for chat {chat_id}...")
+
         loop = asyncio.get_running_loop()
-        response_text = await loop.run_in_executor(None, generate_response, user_text)
-        
-        # 3. Edit the confirmation message with the final AI response
+        response_text = await loop.run_in_executor(None, generate_response, user_text, chat_id)
+
         await status_msg.edit_text(response_text)
         print("[*] Success! Response sent.")
-        
+
     except Exception as e:
-        # 4. If something fails, update the message with the error log
         error_msg = f"❌ Error during execution:\n{str(e)}\n\nCheck if Ollama is running and the model is pulled."
         await status_msg.edit_text(error_msg)
         print(f"[*] Error: {str(e)}")
+
 
 def run_bot():
     print("Starting the Telegram listener...")
     app = ApplicationBuilder().token(config.BOT_TOKEN).build()
 
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("model", set_model_command))
+    app.add_handler(CommandHandler("setmodel", set_model_command))
+    app.add_handler(CommandHandler("models", lambda update, context: update.message.reply_text(
+        f"Current model: {get_active_model(update.effective_chat.id)}. "
+        f"Available: {', '.join(sorted(config.AVAILABLE_MODELS.keys()))}"
+    )))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     print("Bot is polling. Send a message from your phone!")

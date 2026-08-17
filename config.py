@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv
+
 load_dotenv()
 
 # config.py
@@ -9,10 +10,16 @@ load_dotenv()
 # ==========================================
 BOT_TOKEN = os.getenv("BOT_SK_TOKEN")
 
-# 1m - 8m
-# OLLAMA_MODEL = "qwen3.5:2b"
-# 1m - 3m easy questions
-OLLAMA_LIGHT_MODEL = "gemma4:e2b"
-# 5m - 7m complete responses and more accurate
-OLLAMA_MODEL = "gemma4:e4b"
 OLLAMA_BASE_URL = "http://localhost:11434"
+
+# Available local models for the bot.
+# These names are user-friendly aliases and map to the real Ollama model names.
+AVAILABLE_MODELS = {
+    "light": "gemma4:e2b",
+    "heavy": "gemma4:e4b",
+    "gemma-cloud": "gemma4:31b-cloud",
+}
+
+DEFAULT_MODEL = "light"
+OLLAMA_LIGHT_MODEL = AVAILABLE_MODELS["light"]
+OLLAMA_MODEL = AVAILABLE_MODELS[DEFAULT_MODEL]
