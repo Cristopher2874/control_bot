@@ -1,7 +1,7 @@
 import unittest
 
-from formatters import markdown_to_telegram_html
-from llm_service import get_active_model, resolve_model_name, set_active_model
+from app.utils import markdown_to_telegram_html
+from app.services.llm_service import get_active_model, resolve_model_name, set_active_model
 
 
 class ModelSelectionTests(unittest.TestCase):

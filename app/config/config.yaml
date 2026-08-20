@@ -1,0 +1,5 @@
+telegram:
+  bot_sk_token: $BOT_SK_TOKEN
+
+llm_service:
+  ollama_base_url: $OLLAMA_BASE_URL

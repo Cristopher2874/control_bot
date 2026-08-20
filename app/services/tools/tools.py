@@ -1,6 +1,3 @@
-# tools.py
-import os
-import subprocess
 import webbrowser
 import time
 import pyautogui
@@ -12,35 +9,12 @@ def open_gemini_in_chrome() -> str:
     try:
         # Opens Gemini in your default browser or explicitly via Chrome
         gemini_url = "https://gemini.google.com"
-        
-        # Method A: Default browser
+
         webbrowser.open(gemini_url)
-        
-        # Method B: Specifically Chrome on Windows (uncomment if preferred)
-        # subprocess.Popen(["cmd", "/c", "start", "chrome", gemini_url])
         
         return "Successfully opened Gemini on Chrome."
     except Exception as e:
         return f"Failed to open Gemini: {str(e)}"
-
-@tool
-def launch_claude_desktop() -> str:
-    """Launches the Claude Desktop application on Windows."""
-    try:
-        # Standard installation path for Claude Desktop on Windows
-        local_app_data = os.environ.get("LOCALAPPDATA", "")
-        claude_path = os.path.join(local_app_data, "Programs", "Claude", "Claude.exe")
-
-        if os.path.exists(claude_path):
-            subprocess.Popen([claude_path])
-            return "Claude Desktop launched successfully."
-        else:
-            # Fallback: try executing via Windows 'start' command
-            subprocess.Popen(["cmd", "/c", "start", "claude"])
-            return "Attempted to launch Claude via system path."
-            
-    except Exception as e:
-        return f"Failed to launch Claude Desktop: {str(e)}"
 
 @tool
 def prompt_claude_desktop(prompt_text: str) -> str:
@@ -64,3 +38,5 @@ def prompt_claude_desktop(prompt_text: str) -> str:
         return f"Prompt typed into Claude Desktop: '{prompt_text}'"
     except Exception as e:
         return f"GUI Automation failed: {str(e)}"
+
+TOOLS = [prompt_claude_desktop, open_gemini_in_chrome]
