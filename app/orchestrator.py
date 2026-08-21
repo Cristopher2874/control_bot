@@ -4,19 +4,26 @@ from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 
-from config.global_config import GlobalConfigProvider
-from bot_commands import (
+from app.config.global_config import GlobalConfigProvider
+from app.services.commands_service import (
     list_models_command,
     open_browser_command,
     open_calculator_command,
     open_notes_command,
     set_model_command,
+    stop_bot_command,
     start,
 )
-from utils import markdown_to_telegram_html
+from app.services.llm_service import get_llm_service
+from app.utils import markdown_to_telegram_html
+
+LLM_SERVICE = get_llm_service()
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not update.message:
+        return
+
     user_text = update.message.text or ""
     text = user_text.strip()
     chat_id = update.effective_chat.id
@@ -28,11 +35,11 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     status_msg = await update.message.reply_text("⏳ Request received. Initializing agent...")
 
     try:
-        active_model = get_active_model(chat_id)
+        active_model = LLM_SERVICE.get_active_model()
         print(f"[*] Sending to {active_model} for chat {chat_id}...")
 
         loop = asyncio.get_running_loop()
-        response_text = await loop.run_in_executor(None, generate_response, user_text, chat_id)
+        response_text = await loop.run_in_executor(None, LLM_SERVICE.call_agent, user_text, chat_id)
         formatted_text = markdown_to_telegram_html(response_text)
 
         await status_msg.edit_text(formatted_text, parse_mode=ParseMode.HTML)
@@ -47,7 +54,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 def run_bot():
     print("Starting the Telegram listener...")
     config = GlobalConfigProvider()
-    app = ApplicationBuilder().token(config.get_config_value("telegram","bot_sk_token","")).build()
+    app = ApplicationBuilder().token(config.get_config_value("telegram", "bot_sk_token", "")).build()
 
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("model", set_model_command))
@@ -59,6 +66,8 @@ def run_bot():
     app.add_handler(CommandHandler("research", open_browser_command))
     app.add_handler(CommandHandler("calculator", open_calculator_command))
     app.add_handler(CommandHandler("calc", open_calculator_command))
+    app.add_handler(CommandHandler("stop", stop_bot_command))
+    app.add_handler(CommandHandler("shutdown", stop_bot_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
     print("Bot is polling. Send a message from your phone!")
