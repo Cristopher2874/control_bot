@@ -2,6 +2,7 @@ import webbrowser
 import time
 import pyautogui
 from langchain_core.tools import tool
+from app.services.tools.word_tools import WORD_TOOLS
 
 @tool
 def open_gemini_in_chrome() -> str:
@@ -39,4 +40,5 @@ def prompt_claude_desktop(prompt_text: str) -> str:
     except Exception as e:
         return f"GUI Automation failed: {str(e)}"
 
-TOOLS = [prompt_claude_desktop, open_gemini_in_chrome]
+#TOOLS = [prompt_claude_desktop, open_gemini_in_chrome, *WORD_TOOLS]
+TOOLS = [*WORD_TOOLS]
