@@ -1,3 +1,4 @@
+import logging
 from typing import Any
 
 from langchain.agents import create_agent
@@ -6,10 +7,12 @@ from langgraph.checkpoint.memory import InMemorySaver
 
 from app.config.llm_service_providers import LLM_SERVICE_PROVIDERS
 from app.services.tools.tools import TOOLS
+from app.utils.prompts import LLM_SERVICE_SYSTEM_PROMPT
+from app.utils.telemetry import AgentLoggingHandler, monitor_ollama_process
 
+logger = logging.getLogger(__name__)
 
 class LLMService:
-    SYSTEM_PROMPT = "You are a helpful assistant. Be concise with responses"
 
     def __init__(self, default_model_alias: str = "light"):
         self.tools = TOOLS
@@ -17,6 +20,7 @@ class LLMService:
         self.default_model = self.resolve_model_name(default_model_alias)
         self.active_model = self.default_model
         self.agent = self._init_agent(model=self.active_model)
+        logger.info("Generated new instance of LLM service")
 
     def _thread_id(self, chat_id: int | str | None = None) -> str:
         if chat_id is None:
@@ -28,7 +32,7 @@ class LLMService:
         return create_agent(
             model=provider_model,
             tools=self.tools,
-            system_prompt=self.SYSTEM_PROMPT,
+            system_prompt=LLM_SERVICE_SYSTEM_PROMPT,
             checkpointer=self.checkpointer,
         )
 
@@ -37,7 +41,8 @@ class LLMService:
         return {
             "configurable": {
                 "thread_id": self._thread_id(chat_id),
-            }
+            },
+            "callbacks": [AgentLoggingHandler()]
         }
 
     def resolve_model_name(self, model_name: str) -> str:
@@ -65,6 +70,7 @@ class LLMService:
 
     def call_agent(self, prompt: str, chat_id: int | str | None = None) -> str:
         agent_config = self._build_agent_config(chat_id=chat_id)
+        monitor_ollama_process(duration_seconds=300, interval=2)
 
         try:
             response = self.agent.invoke(
@@ -72,6 +78,7 @@ class LLMService:
                 config=agent_config,
             )
         except Exception as exc:
+            logger.error(f"error executing agent: {exc}")
             return f"error executing agent: {exc}"
 
         message = response["messages"][-1]

@@ -1,9 +1,13 @@
 import asyncio
+import logging
+import uuid
+from orchestrator import Orchestrator
 
 from telegram import Update
 from telegram.constants import ParseMode
 from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes, MessageHandler, filters
 
+from app.utils.telemetry import setup_logging, trace_id_var, chat_id_var
 from app.config.global_config import GlobalConfigProvider
 from app.services.commands_service import (
     list_models_command,
@@ -20,6 +24,8 @@ from app.utils import markdown_to_telegram_html
 
 LLM_SERVICE = get_llm_service()
 LLM_ROUTER = get_llm_router()
+setup_logging()
+logger = logging.getLogger("Orchestrator")
 
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -54,7 +60,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def run_bot():
-    print("Starting the Telegram listener...")
+    trace_id_var.set(str(uuid.uuid4()))
+    chat_id_var.set(trace_id_var)
+    logger.info("Starting the listener...")
     config = GlobalConfigProvider()
     app = ApplicationBuilder().token(config.get_config_value("telegram", "bot_sk_token", "")).build()
 
@@ -72,5 +80,5 @@ def run_bot():
     app.add_handler(CommandHandler("shutdown", stop_bot_command))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
-    print("Bot is polling. Send a message from your phone!")
+    logger.info("App ready to poll")
     app.run_polling()

@@ -1,14 +1,25 @@
 import needle
+import logging
 
-from app.services.tools.needle_tools import get_weather, write_essay
+from app.services.tools.needle_tools import TOOLS
+
+logger = logging.getLogger(__name__)
 
 class LLMRouter:
 
     def __init__(self):
-        self.agent = needle.Needle(tools=[get_weather, write_essay])
+        self.tools = TOOLS
+        self.agent = needle.Needle(tools=self.tools)
+        logger.info("Started new LLM Router object")
 
     def run_agent(self, prompt: str, chat_id: int | str | None = None) -> str:
+        logger.info(f"Calling router with prompt\n{prompt}")
+
         response = self.agent.run(query=prompt)
+        
+        logger.debug(response)
+        logger.debug(str(type(response)))
+
         return str(response)
 
 _LLM_ROUTER = LLMRouter()
