@@ -1,18 +1,14 @@
 import needle
 
-from app.services.tools.needle_tools import get_weather
+from app.services.tools.needle_tools import get_weather, write_essay
 
 class LLMRouter:
 
     def __init__(self):
-        self.agent = needle.Needle(tools=[get_weather])
+        self.agent = needle.Needle(tools=[get_weather, write_essay])
 
-    def run_agent(self, prompt:str, chat_id: int | str):
+    def run_agent(self, prompt: str, chat_id: int | str | None = None) -> str:
         response = self.agent.run(query=prompt)
-
-        print(response)
-        print(type(response))
-
         return str(response)
 
 _LLM_ROUTER = LLMRouter()

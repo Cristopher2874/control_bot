@@ -41,7 +41,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         print(f"[*] Sending to {active_model} for chat {chat_id}...")
 
         loop = asyncio.get_running_loop()
-        #response_text = await loop.run_in_executor(None, LLM_SERVICE.call_agent, user_text, chat_id)
         response_text = await loop.run_in_executor(None, LLM_ROUTER.run_agent, user_text, chat_id)
         formatted_text = markdown_to_telegram_html(response_text)
 
