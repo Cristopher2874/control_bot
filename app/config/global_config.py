@@ -1,4 +1,5 @@
 from pathlib import Path
+import json
 from typing import Any
 
 from dotenv import load_dotenv
@@ -69,3 +70,23 @@ class GlobalConfigProvider:
         if isinstance(value, str):
             return value.casefold() in {"1", "true", "yes", "on"}
         return bool(value)
+
+    def get_list(self, section: str, key: str, default: list[str]) -> list[str]:
+        """Read a list from YAML, JSON, or a comma-separated environment value."""
+        value = self.get_config_value(section, key, default)
+        if isinstance(value, list):
+            return [str(item).strip() for item in value if str(item).strip()]
+        if not isinstance(value, str):
+            return default
+
+        raw_value = value.strip()
+        if not raw_value or raw_value == "$" + key.upper():
+            return default
+        try:
+            parsed_value = json.loads(raw_value)
+        except json.JSONDecodeError:
+            parsed_value = [item.strip() for item in raw_value.split(",")]
+
+        if isinstance(parsed_value, list):
+            return [str(item).strip() for item in parsed_value if str(item).strip()]
+        return default

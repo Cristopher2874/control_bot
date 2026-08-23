@@ -1,7 +1,6 @@
 import asyncio
 import logging
 import uuid
-from orchestrator import Orchestrator
 
 from telegram import Update
 from telegram.constants import ParseMode
@@ -43,20 +42,16 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     status_msg = await update.message.reply_text("⏳ Request received. Initializing agent...")
 
     try:
-        active_model = LLM_SERVICE.get_active_model()
-        print(f"[*] Sending to {active_model} for chat {chat_id}...")
-
         loop = asyncio.get_running_loop()
         response_text = await loop.run_in_executor(None, LLM_ROUTER.run_agent, user_text, chat_id)
         formatted_text = markdown_to_telegram_html(response_text)
 
         await status_msg.edit_text(formatted_text, parse_mode=ParseMode.HTML)
-        print("[*] Success! Response sent.")
 
     except Exception as e:
         error_msg = f"❌ Error during execution:\n{str(e)}\n\nCheck if Ollama is running and the model is pulled."
         await status_msg.edit_text(error_msg)
-        print(f"[*] Error: {str(e)}")
+        logger.error(f"[*] Error: {str(e)}")
 
 
 def run_bot():

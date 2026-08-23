@@ -7,4 +7,5 @@ llm_service:
 
 telemetry:
   logger_level: DEBUG
-  system_logs: True
+  system_logs: $SYSTEM_LOGS
+  trusted_modules: $TRUSTED_MODULES

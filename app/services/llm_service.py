@@ -14,8 +14,9 @@ logger = logging.getLogger(__name__)
 
 class LLMService:
 
-    def __init__(self, default_model_alias: str = "light"):
-        self.tools = TOOLS
+    def __init__(self, default_model_alias: str = "fast"):
+        # self.tools = TOOLS
+        self.tools = []
         self.checkpointer = InMemorySaver()
         self.default_model = self.resolve_model_name(default_model_alias)
         self.active_model = self.default_model
@@ -57,7 +58,7 @@ class LLMService:
         available = ", ".join(sorted(LLM_SERVICE_PROVIDERS.keys()))
         raise ValueError(f"Unknown model '{model_name}'. Available: {available}")
 
-    def set_active_model(self, model: str = "light", chat_id: int | str | None = None) -> str:
+    def set_active_model(self, model: str = "fast", chat_id: int | str | None = None) -> str:
         resolved_model = self.resolve_model_name(model)
         # Rebuild the single agent only when model actually changes.
         if resolved_model != self.active_model:
@@ -70,16 +71,21 @@ class LLMService:
 
     def call_agent(self, prompt: str, chat_id: int | str | None = None) -> str:
         agent_config = self._build_agent_config(chat_id=chat_id)
-        monitor_ollama_process(duration_seconds=300, interval=2)
+        logger.debug(f"Calling LLM with model {self.get_active_model()}")
+
+        stop_monitor = monitor_ollama_process(interval=2)
 
         try:
             response = self.agent.invoke(
                 {"messages": [HumanMessage(content=prompt)]},
                 config=agent_config,
             )
+            logger.debug(response)
         except Exception as exc:
             logger.error(f"error executing agent: {exc}")
             return f"error executing agent: {exc}"
+        finally:
+            stop_monitor()
 
         message = response["messages"][-1]
         content = getattr(message, "content", "")
