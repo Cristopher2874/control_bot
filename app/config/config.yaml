@@ -3,3 +3,4 @@ telegram:
 
 llm_service:
   ollama_base_url: $OLLAMA_BASE_URL
+  needle_confidence_threshhold: $NEEDLE_CONFIDENCE_THRESHOLD | 0.5
