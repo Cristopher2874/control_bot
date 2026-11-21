@@ -1,0 +1,31 @@
+# Documentación técnica del harness
+
+Documentación viva del proyecto. Se escribe poco a poco: cada sesión de trabajo, cada decisión y cada cambio de diseño deja su rastro aquí.
+
+## Estructura
+
+| Carpeta / archivo | Qué contiene | Cuándo se actualiza |
+|---|---|---|
+| [architecture/](architecture/) | Cómo está diseñado el sistema **hoy** | Cuando cambia el diseño o se construye una pieza nueva |
+| [decisions/](decisions/) | ADRs: una decisión por archivo, con contexto y alternativas | Cada vez que se toma una decisión no obvia |
+| [sessions/](sessions/) | Bitácora: qué se hizo en cada sesión y qué quedó pendiente | Al cerrar cada sesión de trabajo |
+| [roadmap.md](roadmap.md) | Fases, estado y criterio de terminado | Al avanzar o replanear una fase |
+| [glossary.md](glossary.md) | Términos del proyecto (capability, run, lab…) | Cuando aparece un término nuevo |
+
+Los archivos `FEATURES.md` y `commands.md` de esta carpeta son del bot anterior (antes del reinicio) y se conservan solo como referencia.
+
+## Índice de arquitectura
+
+- [Visión general y capas](architecture/overview.md)
+- [Capabilities (plugins)](architecture/capabilities.md)
+- [Enrutamiento por privacidad](architecture/privacy-routing.md)
+- [Lab y producción](architecture/lab.md)
+- [Computer use](architecture/computer-use.md)
+
+## Reglas para escribir docs
+
+1. **`architecture/` describe el presente.** Si algo cambia, se edita el documento; el porqué del cambio va en un ADR nuevo.
+2. **Los ADRs no se reescriben.** Si una decisión cambia, se crea un ADR nuevo que la reemplaza y el viejo se marca `Reemplazado por ADR-XXXX`.
+3. **Cada sesión deja una bitácora** en `sessions/AAAA-MM-DD-tema.md` usando la [plantilla](sessions/_template.md).
+4. **Lo que todavía no existe se marca.** Usa `> Estado: propuesto`, `> Estado: en construcción` o `> Estado: implementado` al inicio de cada documento de arquitectura.
+5. Los diagramas van en Mermaid dentro del Markdown, así se versionan con el código.
