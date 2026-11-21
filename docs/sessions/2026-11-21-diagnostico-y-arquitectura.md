@@ -59,6 +59,6 @@ Más tarde se añadió el requisito de que el sistema sea modular para sumar API
 
 ## Pendiente
 
-- [ ] Llevar esta documentación a `master`
+- [x] Llevar esta documentación a `master` (commit `5a2093a`)
 - [ ] Abrir sesión nueva sobre `master` e iniciar la [Fase 1](../roadmap.md#fase-1-base-y-cli)
 - [ ] Resolver las preguntas abiertas de [capabilities](../architecture/capabilities.md#preguntas-abiertas)

@@ -1,15 +1,15 @@
 # Roadmap
 
-Cada fase deja algo que ya se puede ejecutar. Marca las casillas al avanzar y enlaza la bitácora de la sesión donde se cerró.
+Cada fase deja algo que ya se puede ejecutar. Marca las casillas al avanzar y enlaza la bitácora de la sesión donde se cerró. El trabajo concreto de cada fase está dividido en tareas en [tasks/](tasks/README.md).
 
-| Fase | Estado | Sesión de cierre |
-|---|---|---|
-| 1. Base + CLI | Pendiente | |
-| 2. Agent loop + computer use | Pendiente | |
-| 3. Política de privacidad | Pendiente | |
-| 4. Chat con memoria | Pendiente | |
-| 5. Telegram + cola de jobs | Pendiente | |
-| Continuo. Evals en el lab | Pendiente | |
+| Fase | Tareas | Estado | Sesión de cierre |
+|---|---|---|---|
+| 1. Base + CLI | T1.1–T1.4 | Pendiente | |
+| 2. Agent loop + computer use | T2.1–T2.4 | Pendiente | |
+| 3. Política de privacidad | T3.1–T3.2 | Pendiente | |
+| 4. Chat con memoria | T4.1–T4.2 | Pendiente | |
+| 5. Telegram + cola de jobs | T5.1–T5.3 | Pendiente | |
+| Continuo. Evals en el lab | TE.1–TE.2 | Pendiente | |
 
 ## Fase 1: base y CLI
 
