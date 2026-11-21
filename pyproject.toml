@@ -1,20 +1,48 @@
 [project]
-name = "pei-control-bot"
+name = "pei-harness-workspace"
 version = "0.1.0"
-description = "Add your description here"
+description = "Workspace del harness modular para modelos locales de Ollama"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "cactus-needle>=2.0.9",
-    "docx>=0.2.4",
-    "envyaml>=1.10.211231",
-    "langchain>=1.3.15",
-    "langchain-mcp-adapters>=0.3.2",
-    "langchain-ollama>=1.1.0",
-    "markdown>=3.10.3",
-    "pyautogui>=0.9.54",
-    "python-docx>=1.2.0",
-    "python-dotenv>=1.2.3",
-    "python-telegram-bot>=22.8",
-    "xhtml2pdf>=0.2.17",
+    "harness",
+    "harness-cli",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["packages/harness", "apps/cli"]
+
+[tool.uv.sources]
+harness = { workspace = true }
+harness-cli = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "ruff",
+    "pyright",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py313"
+extend-exclude = ["legacy"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pyright]
+typeCheckingMode = "standard"
+include = ["packages", "apps", "lab"]
+exclude = ["legacy", "**/__pycache__", "**/.venv"]
+pythonVersion = "3.13"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not ollama'"
+markers = [
+    "ollama: requiere un modelo real de Ollama (se corre aparte con -m ollama)",
 ]

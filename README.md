@@ -1,31 +1,24 @@
-# PEI Control Bot
+# PEI Harness
 
-A Telegram productivity assistant with a local Ollama LLM backend and command-first student utilities.
+Harness modular en Python para usar modelos locales de Ollama (solo CPU, hardware medio-bajo) en tareas concretas: computer use en Windows, chat con memoria y, más adelante, APIs y hardware. Lo privado se queda en local; las capacidades se agregan como plugins.
 
-## Quick start
+El código del bot anterior está en `legacy/`, solo como referencia.
 
-1. Install dependencies.
-2. Make sure Ollama is running locally.
-3. Add your Telegram bot token in the environment.
-4. Run the app with:
+## Instalación
 
-   python main.py
+```powershell
+uv sync
+```
 
-## Command documentation
+## Objetivo de la Fase 1
 
-The feature registry is available in [docs/FEATURES.md](docs/FEATURES.md).
+```powershell
+uv run harness chat "hola"
+```
 
-## Core features
+Responde con un modelo local y deja una traza JSONL del run (todavía no implementado, ver T1.3).
 
-- model switching per chat
-- command-only productivity actions
-- local student tools: notes, browser, calculator
-- extensible modular command structure
+## Documentación
 
-## Architecture
-
-- `config.py` — environment and model configuration
-- `llm_service.py` — LLM access and model resolution
-- `bot_commands.py` — command handlers
-- `features/` — feature modules for local tools
-- `telegram_bot.py` — thin Telegram router
+- [Tareas](docs/tasks/README.md): punto de entrada para trabajar en el repo.
+- [Arquitectura](docs/architecture/overview.md)

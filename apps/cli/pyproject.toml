@@ -1,0 +1,18 @@
+[project]
+name = "harness-cli"
+version = "0.1.0"
+description = "Interfaz de línea de comandos del harness"
+requires-python = ">=3.13"
+dependencies = [
+    "harness",
+]
+
+[tool.uv.sources]
+harness = { workspace = true }
+
+[tool.uv.build-backend]
+module-name = "harness_cli"
+
+[build-system]
+requires = ["uv_build>=0.10.4,<0.11"]
+build-backend = "uv_build"

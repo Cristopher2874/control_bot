@@ -1,7 +1,10 @@
-.venv
+.venv/
 .env
 
-__pycache__
+__pycache__/
+
+# Datos locales del harness (trazas, bases de datos)
+.harness/
 
 skills
 /*.log
