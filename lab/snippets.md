@@ -1,0 +1,3 @@
+SWE-2 models that communicate one smart with other that works for the current planning phase and then the execution is done by the smaller model.
+
+Message Passing Language Models harness. When multiple model threads can communicate between them is better since they can correct each other and provide more accurate results, in theory, but thatworks better for the elimintation problems, when we already know that if one thread finds the solution the others can stop.
