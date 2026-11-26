@@ -13,8 +13,6 @@ Documentación viva del proyecto. Se escribe poco a poco: cada sesión de trabaj
 | [roadmap.md](roadmap.md) | Fases, estado y criterio de terminado | Al avanzar o replanear una fase |
 | [glossary.md](glossary.md) | Términos del proyecto (capability, run, lab…) | Cuando aparece un término nuevo |
 
-Los archivos `FEATURES.md` y `commands.md` de esta carpeta son del bot anterior (antes del reinicio) y se conservan solo como referencia.
-
 ## Índice de arquitectura
 
 - [Visión general y capas](architecture/overview.md)
